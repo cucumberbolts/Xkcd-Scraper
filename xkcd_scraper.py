@@ -12,6 +12,7 @@ def get_xkcd_image(number: int):
     # Reads the xkcd comic page and gets the source code
     html = requests.get("https://xkcd.com/" + str(number)).content
 
+    # New soup object on html source
     soup = BeautifulSoup(html, "html.parser")
 
     # Get's the image address of the comic
@@ -23,7 +24,7 @@ def get_xkcd_image(number: int):
 
     if "?" in title:
         title = "".join(title.split("?"))
-    elif "/" in title:
+    if "/" in title:
         title = "_".join(title.split("/"))
 
     return title, img_source
@@ -38,24 +39,20 @@ def save_xkcd_comic(number: int):
         handler.write(img_data)
 
 
-def main(start=1, stop=10, comics=[], use_thread=True):
+def main(start=1, stop=10, comics=[]):
     if (comics == []):
         comics = list(range(start, stop))
-        if stop > 404:
-            comics.remove(404)
+    if 404 in comics:  # 404 is not a comic
+        comics.remove(404)
 
-    if use_thread:
-        threads = []
-        for comic in comics:
-            thread = threading.Thread(target=save_xkcd_comic, args=(comic,))
-            thread.start()
-            threads.append(thread)
+    threads = []
+    for comic in comics:
+        thread = threading.Thread(target=save_xkcd_comic, args=(comic,))
+        thread.start()
+        threads.append(thread)
 
-        for thread in threads:
-            thread.join()
-    else:
-        for comic in comics:
-            save_xkcd_comic(comic)
+    for thread in threads:
+        thread.join()
 
 
 if __name__ == "__main__":
@@ -63,7 +60,7 @@ if __name__ == "__main__":
         os.mkdir("xkcd_comics")
 
     before = time.time()
-    main(1, 10, use_thread=True)
+    main(1, 100)
     after = time.time()
     seconds = (after - before) % 60
     print("time took: ", int(((after - before) - seconds) / 60), " minutes and ", seconds, " seconds", sep="")
