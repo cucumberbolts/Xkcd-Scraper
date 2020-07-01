@@ -5,19 +5,18 @@ A program for automatically downloading xkcd comics
 import time
 import threading
 import os
-import sys
 import requests
 import json
 
 def get_xkcd_source(number: int) -> tuple:
     """ Gets the xkcd url for the comic number """
     # Reads the xkcd comic page and gets the source code
-    html = requests.get(F"https://xkcd.com/{str(number)}/info.0.json/").content
+    source = requests.get(F"https://xkcd.com/{str(number)}/info.0.json").content
 
-    data = json.loads(html)
+    data = json.loads(source)
 
     # Get's the image address of the comic
-    img_source = "https:" + data["img"]
+    img_source = data["img"]
 
     # Gets the name of the comic
     title = img_source[img_source.rfind("/") + 1:]
