@@ -8,6 +8,7 @@ import os
 import requests
 import json
 
+
 def get_xkcd_source(number: int) -> tuple:
     """ Gets the xkcd url for the comic number """
     # Reads the xkcd comic page and gets the source code
@@ -63,4 +64,4 @@ if __name__ == "__main__":
     seconds = (after - before) % 60
     minutes = int(((after - before) - seconds) / 60)
     print(f"Time took: {minutes} minutes and {seconds} seconds", sep="")
-    input()
+    input("Press Enter to Continue: ")
