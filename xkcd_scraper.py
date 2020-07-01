@@ -69,3 +69,4 @@ if __name__ == "__main__":
     seconds = (after - before) % 60
     minutes = int(((after - before) - seconds) / 60)
     print(f"Time took: {minutes} minutes and {seconds} seconds", sep="")
+    input()
