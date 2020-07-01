@@ -7,22 +7,17 @@ import threading
 import os
 import sys
 import requests
-
-sys.path.append("./dependencies")
-from bs4 import BeautifulSoup
-
+import json
 
 def get_xkcd_source(number: int) -> tuple:
     """ Gets the xkcd url for the comic number """
     # Reads the xkcd comic page and gets the source code
-    html = requests.get("https://xkcd.com/" + str(number)).content
+    html = requests.get(F"https://xkcd.com/{str(number)}/info.0.json/").content
 
-    # New soup object on html source
-    soup = BeautifulSoup(html, "html.parser")
+    data = json.loads(html)
 
     # Get's the image address of the comic
-    attributes = soup.find(id="comic").find("img").attrs
-    img_source = "https:" + attributes["src"]
+    img_source = "https:" + data["img"]
 
     # Gets the name of the comic
     title = img_source[img_source.rfind("/") + 1:]
