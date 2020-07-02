@@ -3,6 +3,7 @@ A program for automatically downloading xkcd comics.
 """
 
 import time
+import random
 import threading
 import os
 import json
@@ -12,11 +13,7 @@ import requests
 
 def get_xkcd_info(number: str) -> tuple:
     """ Gets the xkcd url for the comic number """
-    source = ""
-    if number == "0":
-        source = requests.get("https://xkcd.com/info.0.json").content
-    else:
-        source = requests.get(f"https://xkcd.com/{number}/info.0.json").content
+    source = requests.get(f"https://xkcd.com/{number}/info.0.json").content
 
     data = json.loads(source)
 
@@ -41,7 +38,7 @@ def save_xkcd_comic(number: str, output_dir: str) -> None:
 
 def get_latest_comic() -> str:
     """ Returns the number of the latest comic as a string"""
-    _, data = get_xkcd_info("0")
+    data = json.loads(requests.get("https://xkcd.com/info.0.json").content)
     return str(data["num"])
 
 
@@ -59,12 +56,17 @@ def parse_arguments() -> tuple:
     parser.add_argument("-r", "--range", help="range of comics", type=int, nargs=2, default=(start, stop))
     parser.add_argument("-l", "--list", help="list of comics", type=int, nargs="+", default=comics)
     parser.add_argument("--latest", help="latest comic", action="store_true")
+    parser.add_argument("--random", help="a random comic", nargs="?", type=int, const=1)
 
     args = parser.parse_args()
 
     output_dir = args.output
     start, stop = args.range
     comics = args.list
+
+    if args.random:
+        for _ in range(args.random):
+            comics.append(str(random.randint(1, int(get_latest_comic()))))
 
     if args.latest:
         comics.append(get_latest_comic())

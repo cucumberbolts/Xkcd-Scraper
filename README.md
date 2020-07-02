@@ -42,3 +42,9 @@ The default directory for all the comics is xkcd_scraper, but you can change tha
 ```
 python xkcd_scraper.py --output ./other_dir
 ```
+
+If you want a random comic, you can get that with the `--random` option. You can also get several random comics by adding a number after it:
+
+```
+python xkcd_scraper.py --random 3
+```
