@@ -48,3 +48,5 @@ If you want a random comic, you can get that with the `--random` option. You can
 ```
 python xkcd_scraper.py --random 3
 ```
+
+Finally, if you want to prepend the comic number to the file name, you can put the `-n` or `--numbered` option.
