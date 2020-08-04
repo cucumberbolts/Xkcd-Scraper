@@ -35,8 +35,6 @@ python xkcd_scraper.py --list 1 2 3 4 5
 
 If you want the latest comic, use the `--latest` option.
 
-> Note: if you specify a range and a list, the program will use the list.
-
 The default directory for all the comics is xkcd_scraper, but you can change that with the `-o` or `--output` option:
 
 ```

@@ -8,14 +8,14 @@ import threading
 import os
 import json
 import argparse
-import requests
+import urllib.request
 
 
 def get_xkcd_info(number: int) -> tuple:
     """ Gets the xkcd url for the comic number """
-    source = requests.get(f"https://xkcd.com/{number}/info.0.json").content
+    source = urllib.request.urlopen(f"https://xkcd.com/{number}/info.0.json")
 
-    data = json.loads(source)
+    data = json.loads(source.read())
 
     # Get's the image address of the comic
     img_source = data["img"]
@@ -26,25 +26,26 @@ def get_xkcd_info(number: int) -> tuple:
     return file_name, data
 
 
-def save_xkcd_comic(number: int, output_dir: str, comic_num: bool) -> None:
+def save_xkcd_comic(number: int, output_dir: str, numbered: bool) -> None:
     """ Saves the comic as an image """
-    print(f"Saving comic {number}!")
+    print(f"Saving comic number {number}!")
 
     file_name, data = get_xkcd_info(number)
 
     # Prepends comic number to filename if wanted
-    if comic_num:
+    if numbered:
         file_name = f"{number}_{file_name}"
 
     # Writes image to file
-    img_data = requests.get(data["img"]).content
+    img_data = urllib.request.urlopen(data["img"])
     with open(f"{output_dir}/{file_name}", "wb") as handler:
-        handler.write(img_data)
+        handler.write(img_data.read())
 
 
 def get_latest_comic() -> int:
     """ Returns the number of the latest comic """
-    data = json.loads(requests.get("https://xkcd.com/info.0.json").content)
+    # stuff = urllib.request.urlopen("https://xkcd.com/info.0.json")
+    data = json.loads(urllib.request.urlopen("https://xkcd.com/info.0.json").read())
 
     return data["num"]
 
@@ -70,7 +71,7 @@ def parse_arguments() -> tuple:
     output_dir = args.output
     start, stop = args.range
     comics = args.list
-    comic_num = args.number
+    numbered = args.numbered  # Option to prepend number (bool)
 
     comics.extend(range(start, stop))
 
@@ -84,10 +85,10 @@ def parse_arguments() -> tuple:
     if comics == []:
         comics.extend(range(1, 100))  # Default values when none are specified
 
-    return comics, output_dir, comic_num
+    return comics, output_dir, numbered
 
 
-def main(comics: list, output_dir: str, comic_num: bool) -> None:
+def main(comics: list, output_dir: str, numbered: bool) -> None:
     """ Main function """
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
@@ -106,16 +107,14 @@ def main(comics: list, output_dir: str, comic_num: bool) -> None:
     threads = []
     print("Starting to download!")
     for comic in comics:
-        thread = threading.Thread(target=save_xkcd_comic, args=(comic, output_dir, comic_num,))
+        thread = threading.Thread(target=save_xkcd_comic, args=(comic, output_dir, numbered,))
         thread.start()
         threads.append(thread)
-
-    print("Finished downloading!")
 
     for thread in threads:
         thread.join()
 
-    print("Joined threads!")
+    print("Finished downloading!")
 
 
 if __name__ == "__main__":
