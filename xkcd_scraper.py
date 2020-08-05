@@ -4,11 +4,12 @@ A program for automatically downloading xkcd comics.
 
 import time
 import random
-import threading
 import os
 import json
 import argparse
+from itertools import repeat
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 
 
 def get_xkcd_info(number: int) -> tuple:
@@ -44,7 +45,6 @@ def save_xkcd_comic(number: int, output_dir: str, numbered: bool) -> None:
 
 def get_latest_comic() -> int:
     """ Returns the number of the latest comic """
-    # stuff = urllib.request.urlopen("https://xkcd.com/info.0.json")
     data = json.loads(urllib.request.urlopen("https://xkcd.com/info.0.json").read())
 
     return data["num"]
@@ -95,24 +95,18 @@ def main(comics: list, output_dir: str, numbered: bool) -> None:
 
     comics = list(set(comics))  # Removes any duplicates
 
-    if 404 in comics:  # 404 is not a comic
-        comics.remove(404)
-
     latest = get_latest_comic()
 
     for comic in comics:
         if comic < 1 or comic > latest:
-            raise Exception(f"Number {comic} is not a comic!")
+            comics.remove(comic)
+        if comic == 404:  # 404 is not a comic
+            comics.remove(404)
 
-    threads = []
     print("Starting to download!")
-    for comic in comics:
-        thread = threading.Thread(target=save_xkcd_comic, args=(comic, output_dir, numbered,))
-        thread.start()
-        threads.append(thread)
 
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor(max_workers=(int(len(comics) / 3) + 1)) as executer:
+        executer.map(save_xkcd_comic, comics, repeat(output_dir), repeat(numbered))
 
     print("Finished downloading!")
 
