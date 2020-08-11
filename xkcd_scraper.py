@@ -29,13 +29,14 @@ def get_xkcd_info(number: int) -> tuple:
 
 def save_xkcd_comic(number: int, output_dir: str, numbered: bool) -> None:
     """ Saves the comic as an image """
-    print(f"Saving comic number {number}!")
-
     file_name, data = get_xkcd_info(number)
 
     # Prepends comic number to filename if wanted
-    if numbered:
+    if numbered: 
         file_name = f"{number}_{file_name}"
+
+    # Tells the user what comic
+    print(f"Saving comic number {number} as {output_dir}/{file_name}!")
 
     # Writes image to file
     img_data = urllib.request.urlopen(data["img"])
@@ -105,7 +106,7 @@ def main(comics: list, output_dir: str, numbered: bool) -> None:
 
     print("Starting to download!")
 
-    with ThreadPoolExecutor(max_workers=(int(len(comics) / 3) + 1)) as executer:
+    with ThreadPoolExecutor(max_workers=10) as executer:
         executer.map(save_xkcd_comic, comics, repeat(output_dir), repeat(numbered))
 
     print("Finished downloading!")
