@@ -32,7 +32,7 @@ def save_xkcd_comic(number: int, output_dir: str, numbered: bool) -> None:
     file_name, data = get_xkcd_info(number)
 
     # Prepends comic number to filename if wanted
-    if numbered: 
+    if numbered:
         file_name = f"{number}_{file_name}"
 
     # Tells the user what comic
@@ -83,9 +83,6 @@ def parse_arguments() -> tuple:
     if args.latest:
         comics.append(get_latest_comic())
 
-    if comics == []:
-        comics.extend(range(1, 100))  # Default values when none are specified
-
     return comics, output_dir, numbered
 
 
@@ -104,6 +101,14 @@ def main(comics: list, output_dir: str, numbered: bool) -> None:
         if comic == 404:  # 404 is not a comic
             comics.remove(404)
 
+    if comics == []:
+        # Asks for confirmation if no arguments specified
+        p = input("No command line arguments were entered. You you want to download the first 100 comics (yes or no)?")
+        if p.lower()[0] == 'y':
+            comics = list(range(1, 100))  # Default values when none are specified
+
+    before = time.time()
+
     print("Starting to download!")
 
     with ThreadPoolExecutor(max_workers=10) as executer:
@@ -111,12 +116,12 @@ def main(comics: list, output_dir: str, numbered: bool) -> None:
 
     print("Finished downloading!")
 
-
-if __name__ == "__main__":
-    before = time.time()
-    main(*parse_arguments())
     after = time.time()
     seconds = (after - before) % 60
-    minutes = int(((after - before) - seconds) / 60)
+    minutes = int((after - before - seconds) / 60)
     print(f"Time took: {minutes} minutes and {seconds} seconds", sep="")
+
+
+if __name__ == "__main__":
+    main(*parse_arguments())
     input("Press enter to continue: ")
