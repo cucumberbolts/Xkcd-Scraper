@@ -30,7 +30,7 @@ python xkcd_scraper.py --range 100 1000
 Or you can list out all the comics with `-l` or `--list`:
 
 ```
-python xkcd_scraper.py --list 1 2 3 4 5
+python xkcd_scraper.py --list 1 2 3 4 5 10
 ```
 
 If you want the latest comic, use the `--latest` option.
@@ -47,4 +47,10 @@ If you want a random comic, you can get that with the `--random` option. You can
 python xkcd_scraper.py --random 3
 ```
 
-Finally, if you want to prepend the comic number to the file name, you can put the `-n` or `--numbered` option.
+Formatting the output file is easy with a simple formatting string.
+Use the `-f` or `--format` option.
+Currently, you can specify the comic title with `%T` and the comic number with `%N`.
+
+```
+python xkcd_scraper.py --format "%N_%T"
+```
