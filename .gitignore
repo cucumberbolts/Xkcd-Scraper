@@ -1,3 +1,4 @@
 # Directories
 xkcd_comics/
-.spyproject/
+.vscode/
+.idea/

@@ -27,16 +27,16 @@ def get_xkcd_info(number: int) -> tuple:
     return file_name, data
 
 
-def save_xkcd_comic(number: int, output_dir: str, numbered: bool) -> None:
+def save_xkcd_comic(number: int, output_dir: str, file_name_format: str) -> None:
     """ Saves the comic as an image """
-    file_name, data = get_xkcd_info(number)
+    title, data = get_xkcd_info(number)
 
-    # Prepends comic number to filename if wanted
-    if numbered:
-        file_name = f"{number}_{file_name}"
+    file_name = file_name_format
+    file_name = file_name.replace("%T", title)
+    file_name = file_name.replace("%N", str(number))
 
     # Tells the user what comic
-    print(f"Saving comic number {number} as {output_dir}/{file_name}!")
+    print(f"Saving comic number {number} as {output_dir}/{file_name}")
 
     # Writes image to file
     img_data = urllib.request.urlopen(data["img"])
@@ -57,22 +57,23 @@ def parse_arguments() -> tuple:
     parser = argparse.ArgumentParser(description="A program for automatically downloading xkcd comics")
 
     # Arguments with default parameters
-    parser.add_argument("-o", "--output", help="The path to save comics", default="./xkcd_comics")
+    parser.add_argument("-o", "--output", help="The path to save comics",
+        default="./xkcd_comics")
     parser.add_argument("-r", "--range", help="Range of comics to download(Inclusive, exclusive).",
-                        type=int, nargs=2, default=(1, 1))
+        type=int, nargs=2, default=(1, 1))
     parser.add_argument("-l", "--list", help="List of comics to download",
-                        type=int, nargs="+", default=[])
+        type=int, nargs="+", default=[])
     parser.add_argument("--latest", help="Download the latest comic", action="store_true")
     parser.add_argument("--random", help="Download a random comic", nargs="?", type=int, const=1)
-    parser.add_argument("-n", "--numbered", help="Prepend comic number to filename",
-                        action="store_true")
+    parser.add_argument("-f", "--format", help="Format string for file name",
+        default="%T")
 
     args = parser.parse_args()
 
     output_dir = args.output
     start, stop = args.range
     comics = args.list
-    numbered = args.numbered  # Option to prepend number (bool)
+    file_name_format = args.format
 
     comics.extend(range(start, stop))
 
@@ -83,10 +84,10 @@ def parse_arguments() -> tuple:
     if args.latest:
         comics.append(get_latest_comic())
 
-    return comics, output_dir, numbered
+    return comics, output_dir, file_name_format
 
 
-def main(comics: list, output_dir: str, numbered: bool) -> None:
+def main(comics: list, output_dir: str, file_name_format: str) -> None:
     """ Main function """
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
@@ -101,7 +102,7 @@ def main(comics: list, output_dir: str, numbered: bool) -> None:
         if comic == 404:  # 404 is not a comic
             comics.remove(404)
 
-    if comics == []:
+    if not comics:
         # Asks for confirmation if no arguments specified
         p = input("No command line arguments were entered. You you want to download the first 100 comics (yes or no)?")
         if p.lower()[0] == 'y':
@@ -111,8 +112,8 @@ def main(comics: list, output_dir: str, numbered: bool) -> None:
 
     print("Starting to download!")
 
-    with ThreadPoolExecutor(max_workers=10) as executer:
-        executer.map(save_xkcd_comic, comics, repeat(output_dir), repeat(numbered))
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(save_xkcd_comic, comics, repeat(output_dir), repeat(file_name_format))
 
     print("Finished downloading!")
 
